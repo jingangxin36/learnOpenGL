@@ -44,9 +44,9 @@ int main(int argc, char* argv[])
 
 	// set up vertex data (and buffer(s)) and configure vertex attributes
 	float vertices1[] = {
-		 0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,
+		 0.5f, -0.5f, 0.0f,  1.0f, 1.0f, 0.0f,
 		-0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,
-		 0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f,
+		 0.0f,  0.5f, 0.0f,  0.0f, 1.0f, 1.0f,
 	};
 
 	unsigned int indices[] = {
@@ -81,7 +81,7 @@ int main(int argc, char* argv[])
 
 		shader.Bind();
 
-		shader.SetUniform1f("iTime", float(glfwGetTime()));
+		shader.SetUniform1f("iTime", float(glfwGetTime() * 2));
 
 		renderer.Draw(va, ib, shader);
 
