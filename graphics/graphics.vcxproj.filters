@@ -36,6 +36,12 @@
     <ClCompile Include="src\VertexBuffer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="src\Texture.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="include\stb_image\stb_image.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Shader.h">
@@ -54,6 +60,12 @@
       <Filter>源文件</Filter>
     </ClInclude>
     <ClInclude Include="src\VertexBufferLayout.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Texture.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
+    <ClInclude Include="include\stb_image\stb_image.h">
       <Filter>源文件</Filter>
     </ClInclude>
   </ItemGroup>
