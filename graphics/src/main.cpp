@@ -6,6 +6,9 @@
 #include "VertexBufferLayout.h"
 #include "IndexBuffer.h"
 #include "Texture.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 float mixValue = 0.f;
 
@@ -90,8 +93,7 @@ int main(int argc, char* argv[])
 
 	Texture texture1("res/Textures/container.jpg");
 	shader.SetUniform1i("ourTexture1", 1);
-
-
+ 
 	va.Unbind();
 	vb.Unbind();
 	ib.Unbind();
@@ -114,6 +116,19 @@ int main(int argc, char* argv[])
 
 		shader.Bind();//for set uniform!!
 		shader.SetUniform1f("mixValue", mixValue);
+
+		glm::mat4 transform(1.0f);
+		transform = glm::translate(transform, glm::vec3(0.5f, -0.5f, 0.0f));
+		transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+		shader.SetUniformMat4f("trans", transform);
+
+		renderer.Draw(va, ib, shader);
+
+		transform = glm::mat4(1.f);;
+		transform = glm::translate(transform, glm::vec3(-0.5f, 0.5f, 0.0f));
+		transform = glm::scale(transform, glm::vec3(1.0f, 1.0f, 1.0f) * glm::abs(glm::sin((float)glfwGetTime())));
+		shader.SetUniformMat4f("trans", transform);
+
 
 		renderer.Draw(va, ib, shader);
 
