@@ -117,18 +117,16 @@ int main(int argc, char* argv[])
 		shader.Bind();//for set uniform!!
 		shader.SetUniform1f("mixValue", mixValue);
 
-		glm::mat4 transform(1.0f);
-		transform = glm::translate(transform, glm::vec3(0.5f, -0.5f, 0.0f));
-		transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
-		shader.SetUniformMat4f("trans", transform);
+		glm::mat4 model(1.0f);
+		model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));//rotate around x
+		shader.SetUniformMat4f("model", model);
 
-		renderer.Draw(va, ib, shader);
+		glm::mat4 view(1.0f);
+		view = glm::translate(view, glm::vec3(0, 0, -3));
+		shader.SetUniformMat4f("view", view);
 
-		transform = glm::mat4(1.f);;
-		transform = glm::translate(transform, glm::vec3(-0.5f, 0.5f, 0.0f));
-		transform = glm::scale(transform, glm::vec3(1.0f, 1.0f, 1.0f) * glm::abs(glm::sin((float)glfwGetTime())));
-		shader.SetUniformMat4f("trans", transform);
-
+		const glm::mat4 projection = glm::perspective(glm::radians(45.f), float(800) / float(600), 0.1f, 100.f);
+		shader.SetUniformMat4f("projection", projection);
 
 		renderer.Draw(va, ib, shader);
 
