@@ -65,12 +65,50 @@ int main(int argc, char* argv[])
 	shader.Bind();
 
 
+	glEnable(GL_DEPTH_TEST);
 	// set up vertex data (and buffer(s)) and configure vertex attributes
 	float vertices[] = {
-	-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,
-	 0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,
-	 0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,
-	-0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f 
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 	};
 
 	unsigned int indices[] = {
@@ -79,24 +117,24 @@ int main(int argc, char* argv[])
 	};
 
 	VertexArray va;
-	VertexBuffer vb(vertices, 4 * 8 * sizeof(float));
+	VertexBuffer vb(vertices, 12 * 3 * (2 + 3) * sizeof(float));
 	VertexBufferLayout layout;
 	layout.Push<float>(3);//position
-	layout.Push<float>(3);//color
+	//layout.Push<float>(3);//color
 	layout.Push<float>(2);//uv
 	va.AddBuffer(vb, layout);
 
-	IndexBuffer ib(indices, 3 * 2);
+	//IndexBuffer ib(indices, 3 * 2);
 
-	Texture texture("res/Textures/awesome.png");
-	shader.SetUniform1i("ourTexture0", 0);
+	//Texture texture("res/Textures/awesome.png");
+	//shader.SetUniform1i("ourTexture0", 0);
 
 	Texture texture1("res/Textures/container.jpg");
 	shader.SetUniform1i("ourTexture1", 1);
  
 	va.Unbind();
 	vb.Unbind();
-	ib.Unbind();
+	//ib.Unbind();
 	shader.Unbind();
 
 	Renderer renderer;
@@ -112,13 +150,13 @@ int main(int argc, char* argv[])
 
 		renderer.Clear();
 		texture1.Bind(1);
-		texture.Bind();
+		//texture.Bind();
 
 		shader.Bind();//for set uniform!!
-		shader.SetUniform1f("mixValue", mixValue);
+		//shader.SetUniform1f("mixValue", mixValue);
 
 		glm::mat4 model(1.0f);
-		model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));//rotate around x
+		model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
 		shader.SetUniformMat4f("model", model);
 
 		glm::mat4 view(1.0f);
@@ -128,7 +166,8 @@ int main(int argc, char* argv[])
 		const glm::mat4 projection = glm::perspective(glm::radians(45.f), float(800) / float(600), 0.1f, 100.f);
 		shader.SetUniformMat4f("projection", projection);
 
-		renderer.Draw(va, ib, shader);
+
+		renderer.DrawArray(va, 36, shader);
 
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		glfwPollEvents();
