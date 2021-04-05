@@ -12,8 +12,8 @@
 
 float mixValue = 0.f;
 
-glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraPos = glm::vec3(0.0f, 1.0f, 5.0f);
+glm::vec3 cameraFront = glm::vec3(0.0f, -1.0f, -5.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
 float deltaTime = 0.0f;
@@ -170,51 +170,52 @@ int main(int argc, char* argv[])
 		Shader shader("res/Shaders/Basic.shader");
 		shader.Bind();
 
+		Shader shaderLight("res/Shaders/Light.shader");
 
 		glEnable(GL_DEPTH_TEST);
 		// set up vertex data (and buffer(s)) and configure vertex attributes
 		float vertices[] = {
-			-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-			 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-			 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-			 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-			-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-			-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+			-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+			 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+			 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+			 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+			-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
+			-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
 
-			-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-			 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-			 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-			 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-			-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-			-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+			-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+			 0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+			 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+			 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+			-0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
+			-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,
 
-			-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-			-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-			-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-			-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-			-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-			-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+			-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+			-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+			-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+			-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
+			-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
+			-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
 
-			 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-			 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-			 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-			 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-			 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-			 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+			 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+			 0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+			 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+			 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
+			 0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
+			 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
 
-			-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-			 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-			 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-			 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-			-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-			-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+			-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+			 0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
+			 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+			 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+			-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
+			-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
 
-			-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-			 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-			 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-			 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-			-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-			-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+			-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+			 0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+			 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+			 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+			-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+			-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
 		};
 
 		unsigned int indices[] = {
@@ -223,22 +224,29 @@ int main(int argc, char* argv[])
 		};
 
 		VertexArray va;
-		VertexBuffer vb(vertices, 12 * 3 * (2 + 3) * sizeof(float));
+		VertexBuffer vb(vertices, 12 * 3 * (3 + 3) * sizeof(float));
 		VertexBufferLayout layout;
 		layout.Push<float>(3);//position
-		//layout.Push<float>(3);//color
-		layout.Push<float>(2);//uv
+		layout.Push<float>(3);//normal
 		va.AddBuffer(vb, layout);
 
-		//IndexBuffer ib(indices, 3 * 2);
+		VertexArray vaLight;
+		vaLight.AddBuffer(vb, layout);
 
-		//Texture texture("res/Textures/awesome.png");
-		//shader.SetUniform1i("ourTexture0", 0);
+		shader.SetUniform3f("viewPos", cameraPos.x, cameraPos.y, cameraPos.z);
 
-		//Texture texture1("res/Textures/container.jpg");
-		//shader.SetUniform1i("ourTexture1", 1);
+		shader.SetUniform3f("material.ambient", 1.0f, 0.5f, 0.31f);
+		shader.SetUniform3f("material.diffuse", 1.0f, 0.5f, 0.31f);
+		shader.SetUniform3f("material.specular", 0.5f, 0.5f, 0.5f);
+		shader.SetUniform1f("material.shininess", 32.0f);
+		shader.SetUniform3f("light.ambient", 0.2f, 0.2f, 0.2f);
+		shader.SetUniform3f("light.diffuse", 0.5f, 0.5f, 0.5f); // 将光照调暗了一些以搭配场景
+		shader.SetUniform3f("light.specular", 1.0f, 1.0f, 1.0f);
+
+		glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
 
 		va.Unbind();
+		vaLight.Unbind();
 		vb.Unbind();
 		//ib.Unbind();
 		shader.Unbind();
@@ -256,7 +264,7 @@ int main(int argc, char* argv[])
 			glfwSetScrollCallback(window, scroll_callback);
 
 			// render
-			glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
 			renderer.Clear();
 			//texture1.Bind(1);
@@ -264,20 +272,46 @@ int main(int argc, char* argv[])
 
 			shader.Bind();//for set uniform!!
 			//shader.SetUniform1f("mixValue", mixValue);
+			lightPos.x = 1.0f + sin(glfwGetTime()) * 2.0f;
+			lightPos.y = sin(glfwGetTime() / 2.0f) * 1.0f;
+
+			shader.SetUniform3f("light.position", lightPos);
+
 
 			glm::mat4 model(1.0f);
 			shader.SetUniformMat4f("model", model);
 
 			glm::mat4 view;
 			view = myLookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-
 			shader.SetUniformMat4f("view", view);
 
 			const glm::mat4 projection = glm::perspective(glm::radians(fov), float(800) / float(600), 0.1f, 100.f);
+
+			glm::vec3 lightColor;
+			lightColor.x = sin(glfwGetTime() * 2.0f);
+			lightColor.y = sin(glfwGetTime() * 0.7f);
+			lightColor.z = sin(glfwGetTime() * 1.3f);
+
+			glm::vec3 diffuseColor = lightColor * glm::vec3(0.5f); // 降低影响
+			glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f); // 很低的影响
+
+			shader.SetUniform3f("light.ambient", ambientColor);
+			shader.SetUniform3f("light.diffuse", diffuseColor);
+
 			shader.SetUniformMat4f("projection", projection);
 
 
 			renderer.DrawArray(va, 36, shader);
+
+			model = glm::mat4(1.0f);
+			model = glm::translate(model, lightPos);
+			model = glm::scale(model, glm::vec3(0.2f));
+			shaderLight.Bind();//for set uniform!!
+			shaderLight.SetUniformMat4f("view", view);
+			shaderLight.SetUniformMat4f("model", model);
+			shaderLight.SetUniformMat4f("projection", projection);
+
+			renderer.DrawArray(vaLight, 36, shaderLight);
 
 			// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 			glfwPollEvents();
