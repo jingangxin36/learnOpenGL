@@ -12,16 +12,16 @@ Texture::Texture(const std::string& path): _rendererID(0), _localBuffer(nullptr)
 		std::cout << "Failed to load texture" << path << std::endl;
 	}
 
-	GLCall(glGenTextures(1, &_rendererID));
-	GLCall(glBindTexture(GL_TEXTURE_2D, _rendererID));
+	GL_CALL(glGenTextures(1, &_rendererID));
+	GL_CALL(glBindTexture(GL_TEXTURE_2D, _rendererID));
 
-	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
-	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+	GL_CALL(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
 
-	GLCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, _width, _height, 0, GL_RGBA, GL_UNSIGNED_BYTE, _localBuffer));
-	GLCall(glBindTexture(GL_TEXTURE_2D, 0));
+	GL_CALL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, _width, _height, 0, GL_RGBA, GL_UNSIGNED_BYTE, _localBuffer));
+	GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
 
 	if (_localBuffer)
 	{
@@ -31,16 +31,16 @@ Texture::Texture(const std::string& path): _rendererID(0), _localBuffer(nullptr)
 
 Texture::~Texture()
 {
-	GLCall(glDeleteTextures(1, &_rendererID));
+	GL_CALL(glDeleteTextures(1, &_rendererID));
 }
 
 void Texture::Bind(unsigned slot) const
 {
-	GLCall(glActiveTexture(GL_TEXTURE0 + slot));
-	GLCall(glBindTexture(GL_TEXTURE_2D, _rendererID));
+	GL_CALL(glActiveTexture(GL_TEXTURE0 + slot));
+	GL_CALL(glBindTexture(GL_TEXTURE_2D, _rendererID));
 }
 
 void Texture::Unbind() const
 {
-	GLCall(glBindTexture(GL_TEXTURE_2D, 0));
+	GL_CALL(glBindTexture(GL_TEXTURE_2D, 0));
 }

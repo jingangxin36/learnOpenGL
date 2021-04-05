@@ -6,8 +6,8 @@
 
 #define ASSERT(x)\
 	if(!(x)) __debugbreak();
-#define GLCall(x)\
-	GLClearError();\
+#define GL_CALL(x)\
+	ASSERT(GLLogCall(#x, __FILE__, __LINE__))\
 	x;\
 	ASSERT(GLLogCall(#x, __FILE__, __LINE__))
 
