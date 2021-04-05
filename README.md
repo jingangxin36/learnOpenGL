@@ -12,3 +12,7 @@
 
 ![Tag_1_3](assets/Tag_1_3.gif)
 
+### Tag_2_1: 真实的钢制边框箱子
+
+![Tag_2_1](assets/Tag_2_1.png)
+
