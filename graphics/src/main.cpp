@@ -155,137 +155,141 @@ int main(int argc, char* argv[])
 		glfwTerminate();
 		return -1;
 	}
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	glfwMakeContextCurrent(window);
-
-	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
 	{
-		std::cout << "Failed to initialize GLAD" << std::endl;
-		return -1;
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+		glfwMakeContextCurrent(window);
+
+		if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+		{
+			std::cout << "Failed to initialize GLAD" << std::endl;
+			return -1;
+		}
+
+		glViewport(0, 0, 800, 600);
+
+		Shader shader("res/Shaders/Basic.shader");
+		shader.Bind();
+
+
+		glEnable(GL_DEPTH_TEST);
+		// set up vertex data (and buffer(s)) and configure vertex attributes
+		float vertices[] = {
+			-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+			 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+			 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+			 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+			-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+			-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+
+			-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+			 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+			 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+			 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+			-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+			-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+
+			-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+			-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+			-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+			-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+			-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+			-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+			 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+			 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+			 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+			 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+			 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+			 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+
+			-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+			 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+			 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+			 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+			-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+			-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+
+			-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+			 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+			 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+			 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+			-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+			-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+		};
+
+		unsigned int indices[] = {
+			0, 1, 2, // first
+			2, 3, 0, // first
+		};
+
+		VertexArray va;
+		VertexBuffer vb(vertices, 12 * 3 * (2 + 3) * sizeof(float));
+		VertexBufferLayout layout;
+		layout.Push<float>(3);//position
+		//layout.Push<float>(3);//color
+		layout.Push<float>(2);//uv
+		va.AddBuffer(vb, layout);
+
+		//IndexBuffer ib(indices, 3 * 2);
+
+		//Texture texture("res/Textures/awesome.png");
+		//shader.SetUniform1i("ourTexture0", 0);
+
+		//Texture texture1("res/Textures/container.jpg");
+		//shader.SetUniform1i("ourTexture1", 1);
+
+		va.Unbind();
+		vb.Unbind();
+		//ib.Unbind();
+		shader.Unbind();
+
+		Renderer renderer;
+
+		// render loop
+		while (!glfwWindowShouldClose(window))
+		{
+			// input
+			processInput(window);
+
+			glfwSetCursorPosCallback(window, mouse_callback);
+
+			glfwSetScrollCallback(window, scroll_callback);
+
+			// render
+			glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+
+			renderer.Clear();
+			//texture1.Bind(1);
+			//texture.Bind();
+
+			shader.Bind();//for set uniform!!
+			//shader.SetUniform1f("mixValue", mixValue);
+
+			glm::mat4 model(1.0f);
+			shader.SetUniformMat4f("model", model);
+
+			glm::mat4 view;
+			view = myLookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+
+			shader.SetUniformMat4f("view", view);
+
+			const glm::mat4 projection = glm::perspective(glm::radians(fov), float(800) / float(600), 0.1f, 100.f);
+			shader.SetUniformMat4f("projection", projection);
+
+
+			renderer.DrawArray(va, 36, shader);
+
+			// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
+			glfwPollEvents();
+			glfwSwapBuffers(window);
+		}
+
+
+		// glfw: terminate, clearing all previously allocated GLFW resources.
 	}
 
-	glViewport(0, 0, 800, 600);
-
-	Shader shader("res/Shaders/Basic.shader");
-	shader.Bind();
-
-
-	glEnable(GL_DEPTH_TEST);
-	// set up vertex data (and buffer(s)) and configure vertex attributes
-	float vertices[] = {
-		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-
-		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
-	};
-
-	unsigned int indices[] = {
-		0, 1, 2, // first
-		2, 3, 0, // first
-	};
-
-	VertexArray va;
-	VertexBuffer vb(vertices, 12 * 3 * (2 + 3) * sizeof(float));
-	VertexBufferLayout layout;
-	layout.Push<float>(3);//position
-	//layout.Push<float>(3);//color
-	layout.Push<float>(2);//uv
-	va.AddBuffer(vb, layout);
-
-	//IndexBuffer ib(indices, 3 * 2);
-
-	//Texture texture("res/Textures/awesome.png");
-	//shader.SetUniform1i("ourTexture0", 0);
-
-	Texture texture1("res/Textures/container.jpg");
-	shader.SetUniform1i("ourTexture1", 1);
- 
-	va.Unbind();
-	vb.Unbind();
-	//ib.Unbind();
-	shader.Unbind();
-
-	Renderer renderer;
-
-	// render loop
-	while (!glfwWindowShouldClose(window))
-	{
-		// input
-		processInput(window);
-
-		glfwSetCursorPosCallback(window, mouse_callback);
-
-		glfwSetScrollCallback(window, scroll_callback);
-
-		// render
-		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-
-		renderer.Clear();
-		texture1.Bind(1);
-		//texture.Bind();
-
-		shader.Bind();//for set uniform!!
-		//shader.SetUniform1f("mixValue", mixValue);
-
-		glm::mat4 model(1.0f);
-		shader.SetUniformMat4f("model", model);
-
-		glm::mat4 view;
-		view = myLookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-
-		shader.SetUniformMat4f("view", view);
-
-		const glm::mat4 projection = glm::perspective(glm::radians(fov), float(800) / float(600), 0.1f, 100.f);
-		shader.SetUniformMat4f("projection", projection);
-
-
-		renderer.DrawArray(va, 36, shader);
-
-		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
-		glfwPollEvents();
-		glfwSwapBuffers(window);
-	}
-
-
-	// glfw: terminate, clearing all previously allocated GLFW resources.
 	glfwTerminate();
+	std::cout << "press to quit" << std::endl;
 	return 0;
-
+	
 }

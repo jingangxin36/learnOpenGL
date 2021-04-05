@@ -3,11 +3,6 @@
 #include "VertexArray.h"
 #include <glad/glad.h>
 
-void GLClearError()
-{
-	while (glGetError() != GL_NO_ERROR);
-}
-
 bool GLLogCall(const char* function, const char* file, const int line)
 {
 	while (const GLenum error = glGetError())
