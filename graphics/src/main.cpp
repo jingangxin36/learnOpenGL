@@ -10,15 +10,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-void rgb_color_code(float rgb[])
-{
-	for (int i = 0; i < 3; i++)
-	{
-		rgb[i] = (rand() % 256) / float(256);
-	}
-}
-
-
 float mixValue = 0.f;
 
 glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
@@ -225,20 +216,6 @@ int main(int argc, char* argv[])
 		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
 	};
 
-	// world space positions of our cubes
-	glm::vec3 cubePositions[] = {
-		glm::vec3(0.0f,  0.0f,  0.0f),
-		glm::vec3(2.0f,  5.0f, -15.0f),
-		glm::vec3(-1.5f, -2.2f, -2.5f),
-		glm::vec3(-3.8f, -2.0f, -12.3f),
-		glm::vec3(2.4f, -0.4f, -3.5f),
-		glm::vec3(-1.7f,  3.0f, -7.5f),
-		glm::vec3(1.3f, -2.0f, -2.5f),
-		glm::vec3(1.5f,  2.0f, -2.5f),
-		glm::vec3(1.5f,  0.2f, -1.5f),
-		glm::vec3(-1.3f,  1.0f, -1.5f)
-	};
-
 	unsigned int indices[] = {
 		0, 1, 2, // first
 		2, 3, 0, // first
@@ -266,8 +243,7 @@ int main(int argc, char* argv[])
 	shader.Unbind();
 
 	Renderer renderer;
-	float rgb[3];
-	rgb_color_code(rgb);
+
 	// render loop
 	while (!glfwWindowShouldClose(window))
 	{
@@ -288,31 +264,19 @@ int main(int argc, char* argv[])
 		shader.Bind();//for set uniform!!
 		//shader.SetUniform1f("mixValue", mixValue);
 
+		glm::mat4 model(1.0f);
+		shader.SetUniformMat4f("model", model);
+
+		glm::mat4 view;
+		view = myLookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+
+		shader.SetUniformMat4f("view", view);
+
 		const glm::mat4 projection = glm::perspective(glm::radians(fov), float(800) / float(600), 0.1f, 100.f);
 		shader.SetUniformMat4f("projection", projection);
 
-		for (auto position : cubePositions)
-		{
-			glm::mat4 model(1.0f);
-			model = glm::translate(model, position);
-			shader.SetUniformMat4f("model", model);
 
-			glm::mat4 view;
-			view = myLookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-
-			shader.SetUniformMat4f("view", view);
-
-			if (abs(sin(float(glfwGetTime()))) < 0.01)
-			{
-				rgb_color_code(rgb);
-			}
-
-			shader.SetUniform4f("randomColor", rgb[0], rgb[1], rgb[2], 1);
-
-			renderer.DrawArray(va, 36, shader);
-		}
-
-
+		renderer.DrawArray(va, 36, shader);
 
 		// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 		glfwPollEvents();

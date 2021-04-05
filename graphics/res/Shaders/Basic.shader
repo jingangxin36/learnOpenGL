@@ -1,4 +1,4 @@
-﻿#shader vertex
+#shader vertex
 #version 330 core
 layout(location = 0) in vec3 aPos;
 layout(location = 1) in vec2 aTexCoord;
@@ -24,7 +24,6 @@ in vec2 TexCoord;
 uniform sampler2D ourTexture0;
 uniform sampler2D ourTexture1;
 uniform float mixValue;
-uniform vec4 randomColor;
 
 void main()
 {
@@ -34,5 +33,5 @@ void main()
 	//	discard;
 	//if (color1.a < 0.1)
 	//	discard;
-	FragColor = color1 * randomColor;
+	FragColor = color1;
 }
