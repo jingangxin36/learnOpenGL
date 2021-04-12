@@ -1,4 +1,4 @@
-#shader vertex
+﻿#shader vertex
 #version 330 core
 layout(location = 0) in vec3 aPos;
 layout(location = 1) in vec3 aNormal;
@@ -47,8 +47,7 @@ struct Material {
 uniform Material material;
 
 struct Light {
-	vec3 position;
-
+	vec3 direction;
 	vec3 ambient;
 	vec3 diffuse;
 	vec3 specular;
@@ -58,7 +57,7 @@ uniform Light light;
 
 void main()
 {
-	vec3 lightDir = normalize(light.position - FragPos);
+	vec3 lightDir = normalize(-light.direction);
 
 	vec3 ambient = light.ambient * vec3(texture(material.diffuse, TexCoords));
 
