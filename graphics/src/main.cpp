@@ -254,10 +254,12 @@ int main(int argc, char* argv[])
 		shader.SetUniform3f("light.ambient", 0.2f, 0.2f, 0.2f);
 		shader.SetUniform3f("light.diffuse", 0.5f, 0.5f, 0.5f); // 将光照调暗了一些以搭配场景
 		shader.SetUniform3f("light.specular", 1.0f, 1.0f, 1.0f);
+		shader.SetUniform1f("light.constant", 1.0f);
+		shader.SetUniform1f("light.linear", 0.09f);
+		shader.SetUniform1f("light.quadratic", 0.032f);
 
 		glm::vec3 lightPos(0.6f, 0.5f, 2.0f);
-		// shader.SetUniform3f("light.position", lightPos);
-		shader.SetUniform3f("light.direction", -0.2f, -1.0f, -0.3f);
+		shader.SetUniform3f("light.position", lightPos);
 
 		Texture texture1("res/Textures/container2.png");
 		Texture texture2("res/Textures/container2_specular.png");
@@ -316,15 +318,15 @@ int main(int argc, char* argv[])
 			}
 
 
-			// glm::mat4 model = glm::mat4(1.0f);
-			// model = glm::translate(model, lightPos);
-			// model = glm::scale(model, glm::vec3(0.2f));
-			// shaderLight.Bind();//for set uniform!!
-			// shaderLight.SetUniformMat4f("view", view);
-			// shaderLight.SetUniformMat4f("model", model);
-			// shaderLight.SetUniformMat4f("projection", projection);
-			//
-			// renderer.DrawArray(vaLight, 36, shaderLight);
+			glm::mat4 model = glm::mat4(1.0f);
+			model = glm::translate(model, lightPos);
+			model = glm::scale(model, glm::vec3(0.2f));
+			shaderLight.Bind();//for set uniform!!
+			shaderLight.SetUniformMat4f("view", view);
+			shaderLight.SetUniformMat4f("model", model);
+			shaderLight.SetUniformMat4f("projection", projection);
+
+			renderer.DrawArray(vaLight, 36, shaderLight);
 
 			// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 			glfwPollEvents();
