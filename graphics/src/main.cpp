@@ -248,8 +248,6 @@ int main(int argc, char* argv[])
 		VertexArray vaLight;
 		vaLight.AddBuffer(vb, layout);
 
-		shader.SetUniform3f("viewPos", cameraPos.x, cameraPos.y, cameraPos.z);
-
 		shader.SetUniform1f("material.shininess", 32.0f);
 		shader.SetUniform3f("light.ambient", 0.2f, 0.2f, 0.2f);
 		shader.SetUniform3f("light.diffuse", 0.5f, 0.5f, 0.5f); // 将光照调暗了一些以搭配场景
@@ -260,6 +258,63 @@ int main(int argc, char* argv[])
 
 		glm::vec3 lightPos(0.6f, 0.5f, 2.0f);
 		shader.SetUniform3f("light.position", lightPos);
+
+		glm::vec3 pointLightPositions[] = {
+			glm::vec3(0.7f,  0.2f,  2.0f),
+			glm::vec3(2.3f, -3.3f, -4.0f),
+			glm::vec3(-4.0f,  2.0f, -12.0f),
+			glm::vec3(0.0f,  0.0f, -3.0f)
+		};
+
+		// directional light
+		shader.SetUniform3f("dirLight.direction", -0.2f, -1.0f, -0.3f);
+		shader.SetUniform3f("dirLight.ambient", 0.05f, 0.05f, 0.05f);
+		shader.SetUniform3f("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
+		shader.SetUniform3f("dirLight.specular", 0.5f, 0.5f, 0.5f);
+		// point light 1
+		shader.SetUniform3f("pointLights[0].position", pointLightPositions[0]);
+		shader.SetUniform3f("pointLights[0].ambient", 0.05f, 0.05f, 0.05f);
+		shader.SetUniform3f("pointLights[0].diffuse", 0.8f, 0.8f, 0.8f);
+		shader.SetUniform3f("pointLights[0].specular", 1.0f, 1.0f, 1.0f);
+		shader.SetUniform1f("pointLights[0].constant", 1.0f);
+		shader.SetUniform1f("pointLights[0].linear", 0.09);
+		shader.SetUniform1f("pointLights[0].quadratic", 0.032);
+		// point light 2
+		shader.SetUniform3f("pointLights[1].position", pointLightPositions[1]);
+		shader.SetUniform3f("pointLights[1].ambient", 0.05f, 0.05f, 0.05f);
+		shader.SetUniform3f("pointLights[1].diffuse", 0.8f, 0.8f, 0.8f);
+		shader.SetUniform3f("pointLights[1].specular", 1.0f, 1.0f, 1.0f);
+		shader.SetUniform1f("pointLights[1].constant", 1.0f);
+		shader.SetUniform1f("pointLights[1].linear", 0.09);
+		shader.SetUniform1f("pointLights[1].quadratic", 0.032);
+		// point light 3
+		shader.SetUniform3f("pointLights[2].position", pointLightPositions[2]);
+		shader.SetUniform3f("pointLights[2].ambient", 0.05f, 0.05f, 0.05f);
+		shader.SetUniform3f("pointLights[2].diffuse", 0.8f, 0.8f, 0.8f);
+		shader.SetUniform3f("pointLights[2].specular", 1.0f, 1.0f, 1.0f);
+		shader.SetUniform1f("pointLights[2].constant", 1.0f);
+		shader.SetUniform1f("pointLights[2].linear", 0.09);
+		shader.SetUniform1f("pointLights[2].quadratic", 0.032);
+		// point light 4
+		shader.SetUniform3f("pointLights[3].position", pointLightPositions[3]);
+		shader.SetUniform3f("pointLights[3].ambient", 0.05f, 0.05f, 0.05f);
+		shader.SetUniform3f("pointLights[3].diffuse", 0.8f, 0.8f, 0.8f);
+		shader.SetUniform3f("pointLights[3].specular", 1.0f, 1.0f, 1.0f);
+		shader.SetUniform1f("pointLights[3].constant", 1.0f);
+		shader.SetUniform1f("pointLights[3].linear", 0.09);
+		shader.SetUniform1f("pointLights[3].quadratic", 0.032);
+		// spotLight
+		shader.SetUniform3f("spotLight.position", cameraPos);
+		shader.SetUniform3f("spotLight.direction", cameraFront);
+		shader.SetUniform3f("spotLight.ambient", 0.0f, 0.0f, 0.0f);
+		shader.SetUniform3f("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
+		shader.SetUniform3f("spotLight.specular", 1.0f, 1.0f, 1.0f);
+		shader.SetUniform1f("spotLight.constant", 1.0f);
+		shader.SetUniform1f("spotLight.linear", 0.09);
+		shader.SetUniform1f("spotLight.quadratic", 0.032);
+		shader.SetUniform1f("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
+		shader.SetUniform1f("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
+
 
 		Texture texture1("res/Textures/container2.png");
 		Texture texture2("res/Textures/container2_specular.png");
@@ -293,7 +348,7 @@ int main(int argc, char* argv[])
 			//texture.Bind();
 
 			shader.Bind();//for set uniform!!
-
+			shader.SetUniform3f("viewPos", cameraPos);
 
 			// glm::mat4 model(1.0f);
 			// shader.SetUniformMat4f("model", model);
@@ -317,16 +372,18 @@ int main(int argc, char* argv[])
 				renderer.DrawArray(va, 36, shader);
 			}
 
-
 			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::translate(model, lightPos);
-			model = glm::scale(model, glm::vec3(0.2f));
-			shaderLight.Bind();//for set uniform!!
-			shaderLight.SetUniformMat4f("view", view);
-			shaderLight.SetUniformMat4f("model", model);
-			shaderLight.SetUniformMat4f("projection", projection);
+			for (int i = 0; i < 4; ++i)
+			{
+				model = glm::translate(model, pointLightPositions[i]);
+				model = glm::scale(model, glm::vec3(0.2f));
+				shaderLight.Bind();//for set uniform!!
+				shaderLight.SetUniformMat4f("view", view);
+				shaderLight.SetUniformMat4f("model", model);
+				shaderLight.SetUniformMat4f("projection", projection);
 
-			renderer.DrawArray(vaLight, 36, shaderLight);
+				renderer.DrawArray(vaLight, 36, shaderLight);
+			}
 
 			// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 			glfwPollEvents();
