@@ -45,17 +45,27 @@ project "Graphics"
 		"vendor",
 		"vendor/GLFW/include",
 		"vendor/Glad/include",
+		"vendor/assimp/include",
 		"vendor/glm",
 		"vendor/stb_image"
+	}
+
+	libdirs{
+		"libs"
 	}
 
 	links 
 	{ 
 		"GLFW",
 		"Glad",
+		"assimp-vc141-mtd.lib",
 		"opengl32.lib"
 	}
 
+	postbuildcommands
+	{
+		("{COPY} vendor/assimp/assimp-vc141-mtd.dll ../bin/".. outputdir .. "/Graphics")
+	}
 
 
 	filter "system:windows"
