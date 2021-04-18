@@ -1,0 +1,6 @@
+[submodule "Graphics/vendor/glfw"]
+	path = Graphics/vendor/glfw
+	url = https://github.com/TheCherno/glfw
+[submodule "Graphics/vendor/glm"]
+	path = Graphics/vendor/glm
+	url = https://github.com/g-truc/glm

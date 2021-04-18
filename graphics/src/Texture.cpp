@@ -1,6 +1,6 @@
 #include "Texture.h"
 #include <glad/glad.h>
-#include "stb_image/stb_image.h"
+#include "stb_image.h"
 #include <iostream>
 
 Texture::Texture(const std::string& path): _rendererID(0), _localBuffer(nullptr), _width(0), _height(0), _BPP(0)
