@@ -1,5 +1,15 @@
 # learnOpenGL
 
+## Usage
+
+Currently only "officially" supports Windows - Mac and Linux support is coming soon.
+
+```
+git clone --recursive https://github.com/jingangxin36/learnOpenGL
+```
+
+Run `Win-Premake.bat` and open `Graphyics.sln` in Visual Studio 2017. 
+
 ### Tag_1_1: 创建一个窗口
 
 ![Tag_1_1](assets/Tag_1_1.png)
