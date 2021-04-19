@@ -9,6 +9,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include "Model.h"
+#include "Camera.h"
 
 float mixValue = 0.f;
 
@@ -19,50 +21,41 @@ glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
+// settings
+const unsigned int SCR_WIDTH = 800;
+const unsigned int SCR_HEIGHT = 600;
+// camera
+Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+float lastX = SCR_WIDTH / 2.0f;
+float lastY = SCR_HEIGHT / 2.0f;
+bool firstMouse = true;
+
 void processInput(GLFWwindow *window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
-	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS)
-	{
-		mixValue += 0.01f;
-		if (mixValue >= 1.f)
-		{
-			mixValue = 0.f;
-		}
-	}
-	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS)
-	{
-		mixValue -= 0.01f;
-		if (mixValue <= 0.f)
-		{
-			mixValue = 1.f;
-		}
-	}
 
-	float currentFrame = glfwGetTime();
-	deltaTime = currentFrame - lastFrame;
-	lastFrame = currentFrame;
-
-	//auto y = cameraPos.y;//fps
-	
-	float cameraSpeed = 2.5f * deltaTime;
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		cameraPos += cameraSpeed * cameraFront;
+		camera.ProcessKeyboard(FORWARD, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		cameraPos -= cameraSpeed * cameraFront;
+		camera.ProcessKeyboard(BACKWARD, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+		camera.ProcessKeyboard(LEFT, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-	
-	//cameraPos.y = y;//fps
+		camera.ProcessKeyboard(RIGHT, deltaTime);
 }
 
-float lastX = 400, lastY = 300;
-float yaw = 0, pitch = 0;
-bool firstMouse = true;
+// glfw: whenever the window size changed (by OS or user resize) this callback function executes
+// ---------------------------------------------------------------------------------------------
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+	// make sure the viewport matches the new window dimensions; note that width and 
+	// height will be significantly larger than specified on retina displays.
+	glViewport(0, 0, width, height);
+}
 
+// glfw: whenever the mouse moves, this callback is called
+// -------------------------------------------------------
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (firstMouse)
@@ -71,40 +64,21 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 		lastY = ypos;
 		firstMouse = false;
 	}
+
 	float xoffset = xpos - lastX;
-	float yoffset = lastY - ypos;
+	float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+
 	lastX = xpos;
 	lastY = ypos;
 
-	float sensitivity = 0.05f;
-	xoffset *= sensitivity;
-	yoffset *= sensitivity;
-
-	yaw += xoffset;
-	pitch += yoffset;
-
-	if (pitch > 89.0f)
-		pitch = 89.0f;
-	if (pitch < -89.0f)
-		pitch = -89.0f;
-
-	glm::vec3 front;
-	front.z = -cos(glm::radians(pitch)) * cos(glm::radians(yaw));
-	front.y = sin(glm::radians(pitch));
-	front.x = cos(glm::radians(pitch)) * sin(glm::radians(yaw));
-	cameraFront = glm::normalize(front);
+	camera.ProcessMouseMovement(xoffset, yoffset);
 }
 
-float fov = 45.f;
-
+// glfw: whenever the mouse scroll wheel scrolls, this callback is called
+// ----------------------------------------------------------------------
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	if (fov >= 1.0f && fov <= 45.0f)
-		fov -= yoffset;
-	if (fov <= 1.0f)
-		fov = 1.0f;
-	if (fov >= 45.0f)
-		fov = 45.0f;
+	camera.ProcessMouseScroll(yoffset);
 }
 
 glm::mat4 myLookAt(glm::vec3 eye, glm::vec3 target, glm::vec3 up)
@@ -165,175 +139,24 @@ int main(int argc, char* argv[])
 			return -1;
 		}
 
+
+
+		stbi_set_flip_vertically_on_load(true);
 		glViewport(0, 0, 800, 600);
-
-		Shader shader("res/Shaders/Basic.shader");
-		shader.Bind();
-
-		Shader shaderLight("res/Shaders/Light.shader");
-
 		glEnable(GL_DEPTH_TEST);
-		// set up vertex data (and buffer(s)) and configure vertex attributes
-		float vertices[] = {
-		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,
-		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
-		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
 
-		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
-		 0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  0.0f,
-		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
-		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
+		Shader shader("res/Shaders/Model.shader");
 
-		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-		-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
-		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-		-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
-		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-
-		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-
-		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  1.0f,
-		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
-		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  0.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
-
-		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,
-		 0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  1.0f,
-		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
-		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
-		};
-
-		// world space positions of our cubes
-		glm::vec3 cubePositions[] = {
-			glm::vec3(0.0f,  0.0f,  0.0f),
-			glm::vec3(2.0f,  5.0f, -15.0f),
-			glm::vec3(-1.5f, -2.2f, -2.5f),
-			glm::vec3(-3.8f, -2.0f, -12.3f),
-			glm::vec3(2.4f, -0.4f, -3.5f),
-			glm::vec3(-1.7f,  3.0f, -7.5f),
-			glm::vec3(1.3f, -2.0f, -2.5f),
-			glm::vec3(1.5f,  2.0f, -2.5f),
-			glm::vec3(1.5f,  0.2f, -1.5f),
-			glm::vec3(-1.3f,  1.0f, -1.5f)
-		};
-
-		unsigned int indices[] = {
-			0, 1, 2, // first
-			2, 3, 0, // first
-		};
-
-		VertexArray va;
-		VertexBuffer vb(vertices, 12 * 3 * (3 + 3 + 2) * sizeof(float));
-		VertexBufferLayout layout;
-		layout.Push<float>(3);//position
-		layout.Push<float>(3);//normal
-		layout.Push<float>(2);//uv
-		va.AddBuffer(vb, layout);
-
-		VertexArray vaLight;
-		vaLight.AddBuffer(vb, layout);
-
-		shader.SetUniform1f("material.shininess", 32.0f);
-		shader.SetUniform3f("light.ambient", 0.2f, 0.2f, 0.2f);
-		shader.SetUniform3f("light.diffuse", 0.5f, 0.5f, 0.5f); // 将光照调暗了一些以搭配场景
-		shader.SetUniform3f("light.specular", 1.0f, 1.0f, 1.0f);
-		shader.SetUniform1f("light.constant", 1.0f);
-		shader.SetUniform1f("light.linear", 0.09f);
-		shader.SetUniform1f("light.quadratic", 0.032f);
-
-		glm::vec3 lightPos(0.6f, 0.5f, 2.0f);
-		shader.SetUniform3f("light.position", lightPos);
-
-		glm::vec3 pointLightPositions[] = {
-			glm::vec3(0.7f,  0.2f,  2.0f),
-			glm::vec3(2.3f, -3.3f, -4.0f),
-			glm::vec3(-4.0f,  2.0f, -12.0f),
-			glm::vec3(0.0f,  0.0f, -3.0f)
-		};
-
-		// directional light
-		shader.SetUniform3f("dirLight.direction", -0.2f, -1.0f, -0.3f);
-		shader.SetUniform3f("dirLight.ambient", 0.05f, 0.05f, 0.05f);
-		shader.SetUniform3f("dirLight.diffuse", 0.4f, 0.4f, 0.4f);
-		shader.SetUniform3f("dirLight.specular", 0.5f, 0.5f, 0.5f);
-		// point light 1
-		shader.SetUniform3f("pointLights[0].position", pointLightPositions[0]);
-		shader.SetUniform3f("pointLights[0].ambient", 0.05f, 0.05f, 0.05f);
-		shader.SetUniform3f("pointLights[0].diffuse", 0.8f, 0.8f, 0.8f);
-		shader.SetUniform3f("pointLights[0].specular", 1.0f, 1.0f, 1.0f);
-		shader.SetUniform1f("pointLights[0].constant", 1.0f);
-		shader.SetUniform1f("pointLights[0].linear", 0.09);
-		shader.SetUniform1f("pointLights[0].quadratic", 0.032);
-		// point light 2
-		shader.SetUniform3f("pointLights[1].position", pointLightPositions[1]);
-		shader.SetUniform3f("pointLights[1].ambient", 0.05f, 0.05f, 0.05f);
-		shader.SetUniform3f("pointLights[1].diffuse", 0.8f, 0.8f, 0.8f);
-		shader.SetUniform3f("pointLights[1].specular", 1.0f, 1.0f, 1.0f);
-		shader.SetUniform1f("pointLights[1].constant", 1.0f);
-		shader.SetUniform1f("pointLights[1].linear", 0.09);
-		shader.SetUniform1f("pointLights[1].quadratic", 0.032);
-		// point light 3
-		shader.SetUniform3f("pointLights[2].position", pointLightPositions[2]);
-		shader.SetUniform3f("pointLights[2].ambient", 0.05f, 0.05f, 0.05f);
-		shader.SetUniform3f("pointLights[2].diffuse", 0.8f, 0.8f, 0.8f);
-		shader.SetUniform3f("pointLights[2].specular", 1.0f, 1.0f, 1.0f);
-		shader.SetUniform1f("pointLights[2].constant", 1.0f);
-		shader.SetUniform1f("pointLights[2].linear", 0.09);
-		shader.SetUniform1f("pointLights[2].quadratic", 0.032);
-		// point light 4
-		shader.SetUniform3f("pointLights[3].position", pointLightPositions[3]);
-		shader.SetUniform3f("pointLights[3].ambient", 0.05f, 0.05f, 0.05f);
-		shader.SetUniform3f("pointLights[3].diffuse", 0.8f, 0.8f, 0.8f);
-		shader.SetUniform3f("pointLights[3].specular", 1.0f, 1.0f, 1.0f);
-		shader.SetUniform1f("pointLights[3].constant", 1.0f);
-		shader.SetUniform1f("pointLights[3].linear", 0.09);
-		shader.SetUniform1f("pointLights[3].quadratic", 0.032);
-		// spotLight
-		shader.SetUniform3f("spotLight.position", cameraPos);
-		shader.SetUniform3f("spotLight.direction", cameraFront);
-		shader.SetUniform3f("spotLight.ambient", 0.0f, 0.0f, 0.0f);
-		shader.SetUniform3f("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
-		shader.SetUniform3f("spotLight.specular", 1.0f, 1.0f, 1.0f);
-		shader.SetUniform1f("spotLight.constant", 1.0f);
-		shader.SetUniform1f("spotLight.linear", 0.09);
-		shader.SetUniform1f("spotLight.quadratic", 0.032);
-		shader.SetUniform1f("spotLight.cutOff", glm::cos(glm::radians(12.5f)));
-		shader.SetUniform1f("spotLight.outerCutOff", glm::cos(glm::radians(15.0f)));
-
-
-		Texture texture1("res/Textures/container2.png");
-		Texture texture2("res/Textures/container2_specular.png");
-		texture1.Bind(0);
-		texture2.Bind(1);
-		shader.SetUniform1i("material.diffuse", 0);
-		shader.SetUniform1i("material.specular", 1);
-
-		va.Unbind();
-		vaLight.Unbind();
-		vb.Unbind();
-		//ib.Unbind();
-		shader.Unbind();
-
-		Renderer renderer;
+		Model ourModel("res/Models/nanosuit/nanosuit.obj");
 
 		// render loop
 		while (!glfwWindowShouldClose(window))
 		{
+			//for camera
+			float currentFrame = glfwGetTime();
+			deltaTime = currentFrame - lastFrame;
+			lastFrame = currentFrame;
+
 			// input
 			processInput(window);
 
@@ -341,49 +164,24 @@ int main(int argc, char* argv[])
 
 			glfwSetScrollCallback(window, scroll_callback);
 
-			// render
-			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+			glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-			renderer.Clear();
-			//texture.Bind();
 
-			shader.Bind();//for set uniform!!
-			shader.SetUniform3f("viewPos", cameraPos);
+			shader.Bind();
 
-			// glm::mat4 model(1.0f);
-			// shader.SetUniformMat4f("model", model);
-
-			glm::mat4 view;
-			view = myLookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+			// view/projection transformations
+			glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+			glm::mat4 view = camera.GetViewMatrix();
+			shader.SetUniformMat4f("projection", projection);
 			shader.SetUniformMat4f("view", view);
 
-			const glm::mat4 projection = glm::perspective(glm::radians(fov), float(800) / float(600), 0.1f, 100.f);
-
-			shader.SetUniformMat4f("projection", projection);
-
-			for (unsigned int i = 0; i < 10; i++)
-			{
-				glm::mat4 model(1.0f);
-				model = glm::translate(model, cubePositions[i]);
-				float angle = 20.0f * i;
-				model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-				shader.SetUniformMat4f("model", model);
-
-				renderer.DrawArray(va, 36, shader);
-			}
-
+			// render the loaded model
 			glm::mat4 model = glm::mat4(1.0f);
-			for (int i = 0; i < 4; ++i)
-			{
-				model = glm::translate(model, pointLightPositions[i]);
-				model = glm::scale(model, glm::vec3(0.2f));
-				shaderLight.Bind();//for set uniform!!
-				shaderLight.SetUniformMat4f("view", view);
-				shaderLight.SetUniformMat4f("model", model);
-				shaderLight.SetUniformMat4f("projection", projection);
-
-				renderer.DrawArray(vaLight, 36, shaderLight);
-			}
+			model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
+			model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
+			shader.SetUniformMat4f("model", model);
+			ourModel.Draw(shader);
 
 			// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 			glfwPollEvents();

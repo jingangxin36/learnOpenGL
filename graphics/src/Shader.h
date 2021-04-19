@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include <string>
 #include <unordered_map>
 #include "glm/glm.hpp"
@@ -28,6 +28,8 @@ public:
 	void SetUniform3f(const std::string & name, const glm::vec3 v3);
 	void SetUniform4f(const std::string& name, float v0, float v1, float v2, float v3);
 	void SetUniformMat4f(const std::string& name, const glm::mat4 matrix);
+
+	unsigned int getRenderID() { return _rendererID; }
 private:
 	std::string _filePath;
 	unsigned int _rendererID;
