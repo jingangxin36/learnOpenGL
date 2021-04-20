@@ -30,3 +30,7 @@ Run `Win-Premake.bat` and open `Graphyics.sln` in Visual Studio 2017.
 
 ![Tag_2_2](assets/Tag_2_2.png)
 
+### Tag_3_: 加载模型
+
+![Tag_3_1](assets/Tag_3_1.png)
+
