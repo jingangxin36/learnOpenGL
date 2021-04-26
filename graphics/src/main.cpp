@@ -202,9 +202,8 @@ int main(int argc, char* argv[])
 		glViewport(0, 0, 800, 600);
 		glEnable(GL_DEPTH_TEST);
 
-		Shader shader("res/Shaders/Model.shader");
-
-		Model ourModel("res/Models/nanosuit/nanosuit.obj");
+		Shader shader("res/Shaders/stencil_testing.shader");
+		Shader shaderSingleColor("res/Shaders/stencil_single_color.shader");
 
 
 		VertexArray va;
@@ -214,13 +213,21 @@ int main(int argc, char* argv[])
 		layout.Push<float>(2);//uv
 		va.AddBuffer(vb, layout);
 
-		VertexArray va_panle;
-		VertexBuffer vb_panle(planeVertices, 6 * (3 + 2) * sizeof(float));
-		VertexBufferLayout layout_panle;
-		layout_panle.Push<float>(3);//position
-		layout_panle.Push<float>(2);//uv
-		va_panle.AddBuffer(vb_panle, layout_panle);
+		VertexArray va_plane;
+		VertexBuffer vb_plane(planeVertices, 6 * (3 + 2) * sizeof(float));
+		VertexBufferLayout layout_plane;
+		layout_plane.Push<float>(3);//position
+		layout_plane.Push<float>(2);//uv
+		va_plane.AddBuffer(vb_plane, layout_plane);
 
+		Texture texture("res/Textures/metal.png");
+		Texture texture_plane("res/Textures/marble.jpg");
+		texture.Bind(0);
+		texture_plane.Bind(1);
+		
+		shader.Bind();
+		shader.SetUniform1i("texture1", 0);
+		Renderer renderer;
 		// render loop
 		while (!glfwWindowShouldClose(window))
 		{
@@ -236,28 +243,81 @@ int main(int argc, char* argv[])
 
 			glfwSetScrollCallback(window, scroll_callback);
 
-			glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			// render
+			// ------
+			glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+			renderer.Clear();
 
+			// set uniforms
+			shaderSingleColor.Bind();
+			glm::mat4 model = glm::mat4(1.0f);
+			glm::mat4 view = camera.GetViewMatrix();
+			glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+			shaderSingleColor.SetUniformMat4f("view", view);
+			shaderSingleColor.SetUniformMat4f("projection", projection);
 
 			shader.Bind();
-
-			// view/projection transformations
-			glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-			glm::mat4 view = camera.GetViewMatrix();
-			shader.SetUniformMat4f("projection", projection);
 			shader.SetUniformMat4f("view", view);
+			shader.SetUniformMat4f("projection", projection);
 
-			// render the loaded model
-			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
-			model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
+			// draw floor as normal, but don't write the floor to the stencil buffer, we only care about the containers. We set its mask to 0x00 to not write to the stencil buffer.
+			glStencilMask(0x00);
+			// floor
+			texture_plane.Bind(1);
+			shader.SetUniformMat4f("model", glm::mat4(1.0f));
+			renderer.DrawArray(va_plane, 6, shader);
+
+			// 1st. render pass, draw objects as normal, writing to the stencil buffer
+			// --------------------------------------------------------------------
+			glStencilFunc(GL_ALWAYS, 1, 0xFF);
+			glStencilMask(0xFF);
+			// cubes
+			renderer.DrawArray(va, 36, shader);
+			texture.Bind(0);
+			
+			model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
 			shader.SetUniformMat4f("model", model);
-			ourModel.Draw(shader);
+			renderer.DrawArray(va_plane, 36, shader);
+			model = glm::mat4(1.0f);
+			model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
+			shader.SetUniformMat4f("model", model);
+			shader.SetUniformMat4f("model", model);
+
+			// 2nd. render pass: now draw slightly scaled versions of the objects, this time disabling stencil writing.
+			// Because the stencil buffer is now filled with several 1s. The parts of the buffer that are 1 are not drawn, thus only drawing 
+			// the objects' size differences, making it look like borders.
+			// -----------------------------------------------------------------------------------------------------------------------------
+			glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+			glStencilMask(0x00);
+			glDisable(GL_DEPTH_TEST);
+
+			shaderSingleColor.Bind();
+			float scale = 1.1;
+			// cubes
+			renderer.DrawArray(va, 36, shaderSingleColor);
+			texture.Bind(0);
+
+			model = glm::mat4(1.0f);
+			model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
+			model = glm::scale(model, glm::vec3(scale, scale, scale));
+			shaderSingleColor.SetUniformMat4f("model", model);
+			renderer.DrawArray(va, 36, shaderSingleColor);
+
+			model = glm::mat4(1.0f);
+			model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
+			model = glm::scale(model, glm::vec3(scale, scale, scale));
+			shaderSingleColor.SetUniformMat4f("model", model);
+
+			renderer.DrawArray(va, 36, shaderSingleColor);
+			
+			glStencilMask(0xFF);
+			glStencilFunc(GL_ALWAYS, 0, 0xFF);
+			glEnable(GL_DEPTH_TEST);
 
 			// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
-			glfwPollEvents();
+			// -------------------------------------------------------------------------------
 			glfwSwapBuffers(window);
+			glfwPollEvents();
 		}
 
 
