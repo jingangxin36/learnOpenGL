@@ -201,6 +201,10 @@ int main(int argc, char* argv[])
 		stbi_set_flip_vertically_on_load(true);
 		glViewport(0, 0, 800, 600);
 		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(GL_LESS);
+		glEnable(GL_STENCIL_TEST);
+		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 
 		Shader shader("res/Shaders/stencil_testing.shader");
 		Shader shaderSingleColor("res/Shaders/stencil_single_color.shader");
@@ -220,13 +224,12 @@ int main(int argc, char* argv[])
 		layout_plane.Push<float>(2);//uv
 		va_plane.AddBuffer(vb_plane, layout_plane);
 
-		Texture texture("res/Textures/metal.png");
-		Texture texture_plane("res/Textures/marble.jpg");
-		texture.Bind(0);
-		texture_plane.Bind(1);
-		
+		Texture texture_cube("res/Textures/marble.jpg");
+		Texture texture_plane("res/Textures/metal.png");
+		texture_plane.Bind(0);
 		shader.Bind();
 		shader.SetUniform1i("texture1", 0);
+
 		Renderer renderer;
 		// render loop
 		while (!glfwWindowShouldClose(window))
@@ -249,10 +252,10 @@ int main(int argc, char* argv[])
 			renderer.Clear();
 
 			// set uniforms
-			shaderSingleColor.Bind();
-			glm::mat4 model = glm::mat4(1.0f);
 			glm::mat4 view = camera.GetViewMatrix();
 			glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+
+			shaderSingleColor.Bind();
 			shaderSingleColor.SetUniformMat4f("view", view);
 			shaderSingleColor.SetUniformMat4f("projection", projection);
 
@@ -263,7 +266,7 @@ int main(int argc, char* argv[])
 			// draw floor as normal, but don't write the floor to the stencil buffer, we only care about the containers. We set its mask to 0x00 to not write to the stencil buffer.
 			glStencilMask(0x00);
 			// floor
-			texture_plane.Bind(1);
+			texture_plane.Bind(0);
 			shader.SetUniformMat4f("model", glm::mat4(1.0f));
 			renderer.DrawArray(va_plane, 6, shader);
 
@@ -271,17 +274,22 @@ int main(int argc, char* argv[])
 			// --------------------------------------------------------------------
 			glStencilFunc(GL_ALWAYS, 1, 0xFF);
 			glStencilMask(0xFF);
+
+
 			// cubes
-			renderer.DrawArray(va, 36, shader);
-			texture.Bind(0);
-			
+			texture_cube.Bind(0);
+
+			//cube1
+			glm::mat4 model = glm::mat4(1.0f);
 			model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
 			shader.SetUniformMat4f("model", model);
-			renderer.DrawArray(va_plane, 36, shader);
+			renderer.DrawArray(va, 36, shader);
+
+			//cube2
 			model = glm::mat4(1.0f);
 			model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
 			shader.SetUniformMat4f("model", model);
-			shader.SetUniformMat4f("model", model);
+			renderer.DrawArray(va, 36, shader);
 
 			// 2nd. render pass: now draw slightly scaled versions of the objects, this time disabling stencil writing.
 			// Because the stencil buffer is now filled with several 1s. The parts of the buffer that are 1 are not drawn, thus only drawing 
@@ -294,8 +302,6 @@ int main(int argc, char* argv[])
 			shaderSingleColor.Bind();
 			float scale = 1.1;
 			// cubes
-			renderer.DrawArray(va, 36, shaderSingleColor);
-			texture.Bind(0);
 
 			model = glm::mat4(1.0f);
 			model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
@@ -307,7 +313,6 @@ int main(int argc, char* argv[])
 			model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
 			model = glm::scale(model, glm::vec3(scale, scale, scale));
 			shaderSingleColor.SetUniformMat4f("model", model);
-
 			renderer.DrawArray(va, 36, shaderSingleColor);
 			
 			glStencilMask(0xFF);
