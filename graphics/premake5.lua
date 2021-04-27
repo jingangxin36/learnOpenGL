@@ -26,6 +26,7 @@ project "Graphics"
 
 	files
 	{
+		"res/**.shader",
 		"src/**.h",
 		"src/**.cpp",
 		"vendor/stb_image/**.h",
