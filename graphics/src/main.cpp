@@ -186,6 +186,24 @@ int main(int argc, char* argv[])
 		 5.0f, -0.5f, -5.0f,  2.0f, 2.0f
 	};
 
+	float transparentVertices[] = {
+		// positions         // texture Coords (swapped y coordinates because texture is flipped upside down)
+		0.0f,  0.5f,  0.0f,  1.0f,  1.0f,
+		0.0f, -0.5f,  0.0f,  1.0f,  0.0f,
+		1.0f, -0.5f,  0.0f,  0.0f,  0.0f,
+
+		0.0f,  0.5f,  0.0f,  1.0f,  1.0f,
+		1.0f, -0.5f,  0.0f,  0.0f,  0.0f,
+		1.0f,  0.5f,  0.0f,  0.0f,  1.0f
+	};
+
+	vector<glm::vec3> vegetation;
+	vegetation.push_back(glm::vec3(-1.5f, 0.0f, -0.48f));
+	vegetation.push_back(glm::vec3(1.5f, 0.0f, 0.51f));
+	vegetation.push_back(glm::vec3(0.0f, 0.0f, 0.7f));
+	vegetation.push_back(glm::vec3(-0.3f, 0.0f, -2.3f));
+	vegetation.push_back(glm::vec3(0.5f, 0.0f, -0.6f));
+
 	{
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 		glfwMakeContextCurrent(window);
@@ -224,8 +242,16 @@ int main(int argc, char* argv[])
 		layout_plane.Push<float>(2);//uv
 		va_plane.AddBuffer(vb_plane, layout_plane);
 
+		VertexArray va_transparent;
+		VertexBuffer vb_transparent(transparentVertices, 6 * (3 + 2) * sizeof(float));
+		VertexBufferLayout layout_transparent;
+		layout_transparent.Push<float>(3);//position
+		layout_transparent.Push<float>(2);//uv
+		va_transparent.AddBuffer(vb_transparent, layout_transparent);
+
 		Texture texture_cube("res/Textures/marble.jpg");
 		Texture texture_plane("res/Textures/metal.png");
+		Texture texture_transparent("res/Textures/grass.png");
 		texture_plane.Bind(0);
 		shader.Bind();
 		shader.SetUniform1i("texture1", 0);
@@ -263,6 +289,9 @@ int main(int argc, char* argv[])
 			shader.SetUniformMat4f("view", view);
 			shader.SetUniformMat4f("projection", projection);
 
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+			
 			// draw floor as normal, but don't write the floor to the stencil buffer, we only care about the containers. We set its mask to 0x00 to not write to the stencil buffer.
 			glStencilMask(0x00);
 			// floor
@@ -318,6 +347,21 @@ int main(int argc, char* argv[])
 			glStencilMask(0xFF);
 			glStencilFunc(GL_ALWAYS, 0, 0xFF);
 			glEnable(GL_DEPTH_TEST);
+
+			//glass
+			shader.Bind();
+			texture_transparent.Bind(0);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+			for (unsigned int i = 0; i < vegetation.size(); i++)
+			{
+				model = glm::mat4(1.0f);
+				model = glm::translate(model, vegetation[i]);
+				shader.SetUniformMat4f("model", model);
+				renderer.DrawArray(va_transparent, 6, shader);
+			}
+
 
 			// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 			// -------------------------------------------------------------------------------
