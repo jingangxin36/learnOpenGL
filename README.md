@@ -30,7 +30,16 @@ Run `Win-Premake.bat` and open `Graphyics.sln` in Visual Studio 2017.
 
 ![Tag_2_2](assets/Tag_2_2.png)
 
-### Tag_3_: 加载模型
+### Tag: 加载模型(忘记截图了)
+
+### Tag_3_1: 模板测试
 
 ![Tag_3_1](assets/Tag_3_1.png)
 
+### Tag_3_2: 透明丢弃
+
+![Tag_3_2](assets/Tag_3_2.png)
+
+### Tag_3_3: 透明混合且排序
+
+![Tag_3_3](assets/Tag_3_3.png)

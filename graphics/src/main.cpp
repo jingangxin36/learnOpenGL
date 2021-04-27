@@ -223,6 +223,9 @@ int main(int argc, char* argv[])
 		glEnable(GL_STENCIL_TEST);
 		glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
 		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+		glEnable(GL_BLEND);
+		glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+
 
 		Shader shader("res/Shaders/stencil_testing.shader");
 		Shader shaderSingleColor("res/Shaders/stencil_single_color.shader");
@@ -251,7 +254,7 @@ int main(int argc, char* argv[])
 
 		Texture texture_cube("res/Textures/marble.jpg");
 		Texture texture_plane("res/Textures/metal.png");
-		Texture texture_transparent("res/Textures/grass.png");
+		Texture texture_transparent("res/Textures/window.png");
 		texture_plane.Bind(0);
 		shader.Bind();
 		shader.SetUniform1i("texture1", 0);
@@ -349,19 +352,24 @@ int main(int argc, char* argv[])
 			glEnable(GL_DEPTH_TEST);
 
 			//glass
+			std::map<float, glm::vec3> sorted;
+			for (unsigned int i = 0; i < vegetation.size(); i++)
+			{
+				float distance = glm::length(camera.Position - vegetation[i]);
+				sorted[distance] = vegetation[i];
+			}
 			shader.Bind();
 			texture_transparent.Bind(0);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-			for (unsigned int i = 0; i < vegetation.size(); i++)
+			for (std::map<float, glm::vec3>::reverse_iterator it = sorted.rbegin(); it != sorted.rend(); ++it)
 			{
 				model = glm::mat4(1.0f);
-				model = glm::translate(model, vegetation[i]);
+				model = glm::translate(model, it->second);
 				shader.SetUniformMat4f("model", model);
 				renderer.DrawArray(va_transparent, 6, shader);
 			}
-
 
 			// glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
 			// -------------------------------------------------------------------------------
